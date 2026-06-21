@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FerroShrimp — Pantau Kualitas Tambak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF2F1;
+    --ink:#102B27;
+    --sub:#5E7A75;
+    --orange-1:#FF9A44;
+    --orange-2:#FFC56F;
+    --card-blue:#E3F1FB;
+    --card-blue-ink:#1768A8;
+    --card-green:#E2F6EA;
+    --card-green-ink:#1F9D55;
+    --card-purple:#ECE5FC;
+    --card-purple-ink:#6B4FBB;
+    --card-peach:#FDEAD6;
+    --card-peach-ink:#D9711A;
+    --line-teal:#15B8A6;
+    --accent-blue:#3FA9F5;
+    --danger:#E2572B;
+    --good:#1F9D55;
+    --surface:#FFFFFF;
+    --shadow-soft:0 14px 34px -12px rgba(16,43,39,.22);
+    --shadow-card:0 6px 18px -8px rgba(16,43,39,.12);
+    --radius-xl:30px;
+    --radius-lg:22px;
+    --radius-md:16px;
+    --font-display:'Baloo 2', sans-serif;
+    --font-body:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    background:var(--bg);
+    font-family:var(--font-body);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:36px 16px;
+  }
+  .stage{
+    width:100%;
+    max-width:1100px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+  .stage-label{
+    font-family:var(--font-display);
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--sub);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .stage-label .dot{width:7px;height:7px;border-radius:50%;background:var(--line-teal);box-shadow:0 0 0 4px rgba(21,184,166,.18);}
+
+  /* ---------- phone shell ---------- */
+  .phone{
+    position:relative;
+    width:390px;
+    height:820px;
+    background:#04100E;
+    border-radius:54px;
+    padding:14px;
+    box-shadow:var(--shadow-soft), 0 0 0 1px rgba(16,43,39,.06);
+  }
+  .phone-screen{
+    position:relative;
+    width:100%;
+    height:100%;
+    background:var(--surface);
+    border-radius:42px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .notch{
+    position:absolute;
+    top:8px; left:50%;
+    transform:translateX(-50%);
+    width:120px; height:24px;
+    background:#04100E;
+    border-radius:16px;
+    z-index:40;
+  }
+  .statusbar{
+    position:relative;
+    z-index:30;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 26px 4px;
+    font-size:14px;
+    font-weight:700;
+    flex:0 0 auto;
+  }
+  .statusbar.on-orange{color:#fff;}
+  .statusbar .icons{display:flex; align-items:center; gap:6px;}
+  .statusbar svg{display:block;}
+
+  .screens{
+    position:relative;
+    flex:1;
+    overflow:hidden;
+  }
+  .screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .22s ease;
+  }
+  .screen.active{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+  }
+  .screen-scroll{
+    flex:1;
+    overflow-y:auto;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+  }
+  .screen-scroll::-webkit-scrollbar{display:none;}
+
+  /* ---------- header with wave ---------- */
+  .header{
+    position:relative;
+    flex:0 0 auto;
+    background:linear-gradient(135deg,var(--orange-1),var(--orange-2));
+    padding:14px 24px 46px;
+  }
+  .header-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .header-titlebar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+  }
+  .back-btn{
+    width:36px;height:36px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    background:rgba(255,255,255,.18);
+    border:none;cursor:pointer;
+    color:#fff;
+  }
+  .bell-btn{
+    width:38px;height:38px;
+    border-radius:50%;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    border:none;cursor:pointer;
+    position:relative;
+    color:#0F3D3E;
+    flex:0 0 auto;
+  }
+  .bell-btn .dot{
+    position:absolute; top:8px; right:9px;
+    width:7px;height:7px;border-radius:50%;background:#E2572B;
+    box-shadow:0 0 0 2px #fff;
+  }
+  .header-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:20px;
+    color:#fff;
+  }
+  .greeting{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:25px;
+    color:var(--ink);
+    line-height:1.18;
+  }
+  .greeting .wave{display:inline-block; transform-origin:70% 70%;}
+  .greeting-sub{
+    margin-top:6px;
+    font-size:13.5px;
+    color:rgba(16,43,39,.72);
+    font-weight:500;
+    line-height:1.4;
+  }
+  .header-wave{
+    position:absolute; left:0; right:0; bottom:-1px;
+    width:100%; height:38px;
+    display:block;
+  }
+  .pill-row{
+    display:flex; gap:8px;
+    margin-top:14px;
+    flex-wrap:wrap;
+    position:relative;
+    z-index:2;
+  }
+  .pill{
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:12px;
+    padding:8px 13px;
+    border-radius:999px;
+    background:rgba(255,255,255,.55);
+    color:#7A4A14;
+    border:none;
+    cursor:pointer;
+    transition:.15s;
+    white-space:nowrap;
+  }
+  .pill.active{
+    background:#1768A8;
+    color:#fff;
+    box-shadow:0 8px 16px -6px rgba(23,104,168,.55);
+  }
+
+  .content{
+    padding:18px 22px 110px;
+  }
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface);
+    border-radius:var(--radius-lg);
+    padding:18px;
+    box-shadow:var(--shadow-card);
+    border:1px solid rgba(16,43,39,.05);
+  }
+  .card + .card{margin-top:16px;}
+  .card-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.01em;
+    color:var(--ink);
+  }
+  .card-sub{
+    font-size:12.5px;
+    color:var(--sub);
+    margin-top:3px;
+    font-weight:500;
+  }
+  .metric-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:14px;
+  }
+  .metric{
+    border-radius:var(--radius-md);
+    padding:14px 14px 13px;
+  }
+  .metric-label{font-size:12.5px; font-weight:600; color:rgba(16,43,39,.65);}
+  .metric-value{
+    font-family:var(--font-display);
+    font-size:28px;
+    font-weight:700;
+    margin-top:6px;
+    line-height:1;
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+  }
+  .metric-value .unit{font-size:13px; font-weight:700; font-family:var(--font-body); opacity:.6;}
+  .metric-status{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin-top:8px;
+    font-size:12px;
+    font-weight:700;
+  }
+  .metric-status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .m-blue{background:var(--card-blue); color:var(--ink);}
+  .m-blue .metric-value{color:var(--card-blue-ink);}
+  .m-blue .metric-status{color:var(--card-blue-ink);}
+  .m-green{background:var(--card-green); color:var(--ink);}
+  .m-green .metric-value{color:var(--card-green-ink);}
+  .m-green .metric-status{color:var(--card-green-ink);}
+  .m-purple{background:var(--card-purple); color:var(--ink);}
+  .m-purple .metric-value{color:var(--card-purple-ink);}
+  .m-purple .metric-status{color:var(--card-purple-ink);}
+  .m-peach{background:var(--card-peach); color:var(--ink);}
+  .m-peach .metric-value{color:var(--card-peach-ink);}
+  .m-peach .metric-status{color:var(--card-peach-ink);}
+
+  .status-banner{
+    display:flex; align-items:center; gap:10px;
+    margin-top:2px;
+    font-size:12.5px; font-weight:600; color:var(--good);
+  }
+  .status-banner svg{flex:0 0 auto;}
+
+  .device-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-top:16px;
+  }
+  .device{
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .device-ic{
+    width:46px;height:46px;
+    border-radius:14px;
+    background:#EEF6F4;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .device-name{font-size:11.5px; font-weight:700; color:var(--ink);}
+  .device-state{font-size:11px; font-weight:700; color:var(--line-teal);}
+
+  .chart-wrap{margin-top:14px;}
+  .chart-wrap svg{width:100%; height:auto; display:block;}
+  .chart-axis-label{font-size:9.5px; fill:var(--sub); font-family:'Inter',sans-serif;}
+
+  .history-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:13px 0;
+    border-bottom:1px solid rgba(16,43,39,.07);
+  }
+  .history-row:last-child{border-bottom:none;}
+  .history-date{font-size:13px; font-weight:700; color:var(--ink);}
+  .history-time{font-size:11.5px; color:var(--sub); font-weight:500; margin-top:1px;}
+  .history-val{font-size:14.5px; font-weight:800; color:var(--card-blue-ink); font-family:var(--font-display);}
+
+  .search-bar{
+    display:flex; align-items:center; gap:10px;
+    background:#fff;
+    border:1.6px solid #BFE0F2;
+    border-radius:999px;
+    padding:13px 16px;
+    margin-bottom:16px;
+  }
+  .search-bar input{
+    flex:1; border:none; outline:none;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    background:transparent;
+  }
+  .search-bar svg{flex:0 0 auto;}
+
+  /* ---------- notif ---------- */
+  .day-label{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    margin:18px 0 10px;
+  }
+  .day-label:first-child{margin-top:0;}
+  .notif-item{
+    display:flex; gap:12px;
+    background:#fff;
+    border-radius:var(--radius-md);
+    padding:14px;
+    border:1px solid rgba(16,43,39,.06);
+    box-shadow:var(--shadow-card);
+    margin-bottom:10px;
+  }
+  .notif-ic{
+    width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;
+  }
+  .notif-ic.ok{background:#E2F6EA; color:var(--good);}
+  .notif-ic.info{background:#E3F1FB; color:var(--accent-blue);}
+  .notif-ic.warn{background:#FDE6DD; color:var(--danger);}
+  .notif-body{flex:1; min-width:0;}
+  .notif-title{font-size:13.5px; font-weight:700; color:var(--ink);}
+  .notif-desc{font-size:12px; color:var(--sub); margin-top:2px; line-height:1.4;}
+  .notif-time{font-size:11px; color:var(--sub); font-weight:600; flex:0 0 auto; padding-top:1px;}
+
+  /* ---------- bottom nav ---------- */
+  .bottom-nav{
+    position:absolute;
+    left:14px; right:14px; bottom:14px;
+    height:70px;
+    background:#fff;
+    border-radius:30px;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    box-shadow:0 -8px 24px -10px rgba(16,43,39,.18);
+    z-index:50;
+  }
+  .nav-item{
+    display:flex; align-items:center; justify-content:center;
+    width:46px;height:46px;
+    border-radius:16px;
+    border:none; background:transparent;
+    cursor:pointer;
+    color:#A9BAB6;
+    transition:.15s;
+  }
+  .nav-item.active{
+    background:var(--accent-blue);
+    color:#fff;
+  }
+
+  /* ---------- buttons / inputs ---------- */
+  .btn{
+    width:100%;
+    border:none;
+    border-radius:999px;
+    padding:15px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    transition:.15s transform, .15s opacity;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:linear-gradient(135deg,var(--orange-1),var(--orange-2)); color:#fff; box-shadow:0 10px 22px -8px rgba(255,154,68,.55);}
+  .btn-secondary{background:var(--accent-blue); color:#fff; box-shadow:0 10px 22px -8px rgba(63,169,245,.5);}
+  .btn-ghost{background:#EAF3F2; color:var(--ink);}
+  .btn-danger{background:var(--danger); color:#fff;}
+  .btn-outline{background:transparent; color:var(--sub); border:1.6px solid #D8E4E1;}
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--sub);
+    margin-bottom:7px;
+  }
+  .field input{
+    width:100%;
+    border:none;
+    background:#DFF0FB;
+    border-radius:999px;
+    padding:14px 18px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    outline:none;
+    font-family:var(--font-body);
+  }
+  .field input::placeholder{color:rgba(16,43,39,.45);}
+  .field-pin{position:relative;}
+  .field-pin .eye{
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    cursor:pointer; color:var(--ink); opacity:.55;
+  }
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0;
+    border-bottom:1px solid rgba(16,43,39,.06);
+  }
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle-row span{font-size:14px; font-weight:600; color:var(--ink);}
+  .switch{
+    position:relative; width:46px; height:27px;
+    border-radius:999px; background:#D7E2E0;
+    cursor:pointer; flex:0 0 auto;
+    transition:.2s;
+  }
+  .switch.on{background:var(--accent-blue);}
+  .switch::after{
+    content:"";
+    position:absolute; top:3px; left:3px;
+    width:21px;height:21px;border-radius:50%;
+    background:#fff;
+    box-shadow:0 2px 4px rgba(0,0,0,.18);
+    transition:.2s;
+  }
+  .switch.on::after{left:22px;}
+
+  .menu-row{
+    display:flex; align-items:center; gap:14px;
+    padding:15px 0;
+    cursor:pointer;
+    border-bottom:1px solid rgba(16,43,39,.06);
+  }
+  .menu-row:last-child{border-bottom:none;}
+  .menu-ic{
+    width:42px;height:42px;border-radius:50%;
+    background:var(--accent-blue); color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;
+  }
+  .menu-row span{flex:1; font-weight:700; font-size:14.5px; color:var(--ink);}
+  .menu-row.danger .menu-ic{background:var(--danger);}
+  .chev{color:#B7C7C3; flex:0 0 auto;}
+
+  .profile-head{
+    display:flex; flex-direction:column; align-items:center;
+    margin-top:-44px; position:relative; z-index:3;
+  }
+  .avatar{
+    width:108px;height:108px;border-radius:50%;
+    background:linear-gradient(135deg,#FFD9A8,#FF9A44);
+    border:5px solid #fff;
+    box-shadow:0 10px 24px -8px rgba(16,43,39,.3);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-size:38px; font-weight:700; color:#fff;
+    position:relative;
+  }
+  .avatar .camera{
+    position:absolute; right:-2px; bottom:-2px;
+    width:32px;height:32px;border-radius:50%;
+    background:var(--accent-blue); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    border:3px solid #fff;
+  }
+  .profile-name{font-family:var(--font-display); font-weight:700; font-size:19px; margin-top:14px;}
+  .profile-id{font-size:12.5px; color:var(--sub); font-weight:600; margin-top:2px;}
+
+  .section-label{
+    font-family:var(--font-display); font-weight:700; font-size:13px;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--sub);
+    margin:22px 0 8px;
+  }
+  .terms-h{font-family:var(--font-display); font-weight:700; font-size:16.5px; margin-bottom:10px;}
+  .terms-p{font-size:13.2px; line-height:1.65; color:#3C5550; margin-bottom:12px;}
+  .terms-ol{margin:8px 0 14px 18px; font-size:13.2px; line-height:1.7; color:#3C5550;}
+  .terms-li-loose{font-size:13.2px; line-height:1.7; color:#3C5550; margin:4px 0 4px 18px;}
+  .link-blue{color:var(--accent-blue); font-weight:700; text-decoration:none;}
+  .checkline{display:flex; align-items:flex-start; gap:10px; margin:16px 0 18px; font-size:13px; color:var(--sub); font-weight:600;}
+  .checkline input{width:18px;height:18px; margin-top:1px; accent-color:var(--accent-blue);}
+
+  .warn-box{
+    background:#E3F1FB; border-radius:var(--radius-md);
+    padding:16px; font-size:12.8px; color:#1A4A6B; line-height:1.6; font-weight:500;
+  }
+  .warn-box li{margin-bottom:8px;}
+  .warn-box ul{padding-left:18px;}
+
+  .center-stage{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:40px;
+    text-align:center;
+  }
+  .success-ring{
+    width:104px;height:104px;border-radius:50%;
+    border:5px solid #fff;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:26px;
+    position:relative;
+  }
+  .success-ring::after{content:"";position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.18);}
+
+  /* ---------- modal ---------- */
+  .modal-overlay{
+    position:absolute; inset:0;
+    background:rgba(8,28,26,.5);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:200;
+    padding:30px;
+    border-radius:42px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-box{
+    background:#fff;
+    border-radius:26px;
+    padding:28px 24px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 24px 60px -16px rgba(0,0,0,.35);
+  }
+  .modal-title{font-family:var(--font-display); font-weight:700; font-size:18px; margin-bottom:8px;}
+  .modal-text{font-size:13px; color:var(--sub); line-height:1.6; margin-bottom:20px;}
+  .modal-actions{display:flex; flex-direction:column; gap:10px;}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:absolute;
+    left:50%; bottom:96px;
+    transform:translateX(-50%) translateY(20px);
+    background:#102B27;
+    color:#fff;
+    font-size:13px;
+    font-weight:600;
+    padding:12px 20px;
+    border-radius:999px;
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    z-index:300;
+    white-space:nowrap;
+    box-shadow:0 14px 30px -10px rgba(0,0,0,.4);
+    display:flex; align-items:center; gap:8px;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---------- splash ---------- */
+  #screen-splash{background:linear-gradient(160deg,#FFB066,#FF9A44 55%,#FF8A2E);}
+  .splash-stage{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:22px;
+  }
+  .splash-logo-wrap{
+    position:relative; width:150px; height:150px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .splash-ring{
+    position:absolute; inset:0; border-radius:50%;
+    border:2.5px solid rgba(255,255,255,.55);
+    animation:ripple 2.2s ease-out infinite;
+  }
+  .splash-ring.r2{animation-delay:.6s;}
+  .splash-ring.r3{animation-delay:1.2s;}
+  @keyframes ripple{
+    0%{transform:scale(.55); opacity:0;}
+    25%{opacity:.85;}
+    100%{transform:scale(1.25); opacity:0;}
+  }
+  .splash-logo{
+    width:96px;height:96px;
+    animation:pop .7s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes pop{
+    0%{transform:scale(.4) rotate(-8deg); opacity:0;}
+    100%{transform:scale(1) rotate(0); opacity:1;}
+  }
+  .splash-word{
+    font-family:var(--font-display); font-weight:700;
+    font-size:28px; color:#fff;
+    letter-spacing:.01em;
+    opacity:0;
+    animation:rise .6s ease .55s both;
+  }
+  @keyframes rise{
+    0%{opacity:0; transform:translateY(10px);}
+    100%{opacity:1; transform:translateY(0);}
+  }
+  .splash-tag{
+    font-size:12.5px; font-weight:600; color:rgba(255,255,255,.85);
+    opacity:0;
+    animation:rise .6s ease .75s both;
+  }
+  .splash-loader{
+    width:120px; height:5px; border-radius:999px;
+    background:rgba(255,255,255,.35);
+    overflow:hidden;
+    margin-top:6px;
+  }
+  .splash-loader::after{
+    content:""; display:block; height:100%; width:40%;
+    background:#fff; border-radius:999px;
+    animation:load 1.6s ease-in-out infinite;
+  }
+  @keyframes load{
+    0%{transform:translateX(-100%);}
+    100%{transform:translateX(280%);}
+  }
+
+  /* ---------- prototype frame chrome (outside phone) ---------- */
+  .credit{
+    font-size:11.5px; color:var(--sub); font-weight:500; text-align:center; max-width:380px;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="stage-label"><span class="dot"></span> FerroShrimp · Prototype Interaktif</div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="phone-screen" id="phoneScreen">
+
+      <div class="screens" id="screens">
+
+        <!-- SPLASH -->
+        <section class="screen active" id="screen-splash">
+          <div class="splash-stage">
+            <div class="splash-logo-wrap">
+              <div class="splash-ring"></div>
+              <div class="splash-ring r2"></div>
+              <div class="splash-ring r3"></div>
+              <svg class="splash-logo" viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="58" r="34" fill="#fff"/>
+                <path d="M28 60c8-16 22-24 38-22 8 1 14 6 16 13" stroke="#1768A8" stroke-width="5" stroke-linecap="round" fill="none"/>
+                <path d="M30 64c6 8 16 13 26 12" stroke="#FF9A44" stroke-width="5" stroke-linecap="round" fill="none"/>
+                <circle cx="44" cy="50" r="4.5" fill="#102B27"/>
+                <path d="M44 30c2-6 6-10 10-12" stroke="#FF9A44" stroke-width="5" stroke-linecap="round" fill="none"/>
+              </svg>
+            </div>
+            <div class="splash-word">FerroShrimp</div>
+            <div class="splash-tag">Memuat data tambak Anda…</div>
+            <div class="splash-loader"></div>
+          </div>
+        </section>
+
+        <!-- HOME -->
+        <section class="screen" id="screen-home">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-row">
+                <div>
+                  <div class="greeting">Halo, Alam <span class="wave">👋</span></div>
+                  <div class="greeting-sub">Pantau kualitas tambak Anda secara&nbsp;real-time</div>
+                </div>
+                <button class="bell-btn" onclick="go('notif')"><span class="dot"></span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2c0 .6-.2 1.2-.6 1.7L4 16.5c-.6.8 0 2 1 2h14c1 0 1.6-1.2 1-2l-1.4-2.6c-.4-.5-.6-1.1-.6-1.7V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+
+            <div class="content" style="padding-top:0;">
+              <div class="card">
+                <div class="card-title">Kualitas air saat ini</div>
+                <div class="status-banner">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E2F6EA"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#1F9D55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Semua sistem berjalan dengan baik
+                </div>
+                <div class="metric-grid">
+                  <div class="metric m-blue">
+                    <div class="metric-label">Turbiditas</div>
+                    <div class="metric-value">12.6<span class="unit">NTU</span></div>
+                    <div class="metric-status">Baik</div>
+                  </div>
+                  <div class="metric m-green">
+                    <div class="metric-label">Suhu</div>
+                    <div class="metric-value">30.3<span class="unit">°C</span></div>
+                    <div class="metric-status">Normal</div>
+                  </div>
+                  <div class="metric m-purple">
+                    <div class="metric-label">pH</div>
+                    <div class="metric-value">7.6</div>
+                    <div class="metric-status">Normal</div>
+                  </div>
+                  <div class="metric m-peach">
+                    <div class="metric-label">DO</div>
+                    <div class="metric-value">6.8<span class="unit">mg/L</span></div>
+                    <div class="metric-status">Baik</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Status sistem</div>
+                <div class="card-sub">Semua perangkat berjalan dengan baik</div>
+                <div class="device-grid">
+                  <div class="device">
+                    <div class="device-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C8 8 5 11.5 5 15a7 7 0 0 0 14 0c0-3.5-3-7-7-13Z" fill="#FF9A44"/></svg></div>
+                    <div class="device-name">Ferrofluida</div>
+                    <div class="device-state">Aktif</div>
+                  </div>
+                  <div class="device">
+                    <div class="device-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 5v14M15 5v14M6 9h2M6 15h2M16 9h2M16 15h2" stroke="#15B8A6" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                    <div class="device-name">Elektromagnet</div>
+                    <div class="device-state">Aktif</div>
+                  </div>
+                  <div class="device">
+                    <div class="device-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="6" y="4" width="9" height="16" rx="3" stroke="#3FA9F5" stroke-width="1.8"/><path d="M17 9c2 1.2 2 5 0 6" stroke="#3FA9F5" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                    <div class="device-name">Pompa Air</div>
+                    <div class="device-state">Aktif</div>
+                  </div>
+                  <div class="device">
+                    <div class="device-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 5h14l-5 8v6l-4 2v-8L5 5Z" stroke="#1F9D55" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+                    <div class="device-name">Filter</div>
+                    <div class="device-state">Aktif</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Grafik turbiditas</div>
+                <div class="card-sub">7 hari terakhir</div>
+                <div class="chart-wrap" id="chartHome"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MONITOR -->
+        <section class="screen" id="screen-monitor">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <div class="header-title">Riwayat Kualitas Air</div>
+                <button class="bell-btn" onclick="go('notif')"><span class="dot"></span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2c0 .6-.2 1.2-.6 1.7L4 16.5c-.6.8 0 2 1 2h14c1 0 1.6-1.2 1-2l-1.4-2.6c-.4-.5-.6-1.1-.6-1.7V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="pill-row" id="monitorTabs">
+                <button class="pill active" data-tab="turbiditas" onclick="switchMonitor('turbiditas')">Turbiditas</button>
+                <button class="pill" data-tab="suhu" onclick="switchMonitor('suhu')">Suhu</button>
+                <button class="pill" data-tab="ph" onclick="switchMonitor('ph')">pH</button>
+                <button class="pill" data-tab="do" onclick="switchMonitor('do')">DO</button>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="search-bar">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#3FA9F5" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#3FA9F5" stroke-width="2" stroke-linecap="round"/></svg>
+                <input type="text" id="monitorRange" value="20 Mei 2026 – 1 Jun 2026" readonly>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="3" stroke="#3FA9F5" stroke-width="1.8"/><path d="M3 9h18M8 3v4M16 3v4" stroke="#3FA9F5" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+
+              <div class="card">
+                <div class="card-title" id="monitorChartTitle">Turbiditas (NTU)</div>
+                <div class="chart-wrap" id="chartMonitor"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Data riwayat</div>
+                <div id="monitorHistory"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- NOTIFICATIONS -->
+        <section class="screen" id="screen-notif">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <div class="header-title">Notifikasi</div>
+                <div style="width:38px;"></div>
+              </div>
+              <div class="pill-row" id="notifTabs">
+                <button class="pill active" data-tab="semua" onclick="switchNotif('semua')">Semua</button>
+                <button class="pill" data-tab="info" onclick="switchNotif('info')">Info</button>
+                <button class="pill" data-tab="peringat" onclick="switchNotif('peringat')">Peringatan</button>
+                <button class="pill" data-tab="sistem" onclick="switchNotif('sistem')">Sistem</button>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;" id="notifList"></div>
+          </div>
+        </section>
+
+        <!-- REPORT -->
+        <section class="screen" id="screen-report">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <div class="header-title">Laporan</div>
+                <button class="bell-btn" onclick="go('notif')"><span class="dot"></span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2c0 .6-.2 1.2-.6 1.7L4 16.5c-.6.8 0 2 1 2h14c1 0 1.6-1.2 1-2l-1.4-2.6c-.4-.5-.6-1.1-.6-1.7V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="pill-row" id="reportTabs">
+                <button class="pill active" data-tab="harian" onclick="switchReport('harian')">Harian</button>
+                <button class="pill" data-tab="mingguan" onclick="switchReport('mingguan')">Mingguan</button>
+                <button class="pill" data-tab="bulanan" onclick="switchReport('bulanan')">Bulanan</button>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="search-bar">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#3FA9F5" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#3FA9F5" stroke-width="2" stroke-linecap="round"/></svg>
+                <input type="text" id="reportRange" value="20 Mei 2026" readonly>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="3" stroke="#3FA9F5" stroke-width="1.8"/><path d="M3 9h18M8 3v4M16 3v4" stroke="#3FA9F5" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+
+              <div class="card">
+                <div class="card-title" id="reportSummaryTitle">Ringkasan harian</div>
+                <div class="metric-grid">
+                  <div class="metric m-blue"><div class="metric-label">Turbiditas</div><div class="metric-value">2.6<span class="unit">NTU</span></div><div class="metric-status">Baik</div></div>
+                  <div class="metric m-green"><div class="metric-label">Suhu</div><div class="metric-value">30.3<span class="unit">°C</span></div><div class="metric-status">Normal</div></div>
+                  <div class="metric m-purple"><div class="metric-label">pH</div><div class="metric-value">7.6</div><div class="metric-status">Normal</div></div>
+                  <div class="metric m-peach"><div class="metric-label">DO</div><div class="metric-value">6.8<span class="unit">mg/L</span></div><div class="metric-status">Baik</div></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title" id="reportChartTitle">Grafik harian (turbiditas)</div>
+                <div class="chart-wrap" id="chartReport"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Total siklus pemurnian</div>
+                <div class="card-sub" id="reportCycleSub">20 Mei 2026</div>
+                <div style="display:flex; align-items:baseline; gap:8px; margin-top:14px;">
+                  <div style="font-family:var(--font-display); font-size:38px; font-weight:700; color:var(--card-blue-ink);" id="reportCycleValue">18</div>
+                  <div style="font-size:13px; color:var(--sub); font-weight:600;">siklus selesai</div>
+                </div>
+                <div style="margin-top:14px; display:flex; gap:10px;">
+                  <div style="flex:1; background:#E2F6EA; border-radius:14px; padding:10px 12px;">
+                    <div style="font-size:11.5px; color:var(--sub); font-weight:600;">Rata-rata durasi</div>
+                    <div style="font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--good); margin-top:3px;" id="reportCycleDuration">42 mnt</div>
+                  </div>
+                  <div style="flex:1; background:#E3F1FB; border-radius:14px; padding:10px 12px;">
+                    <div style="font-size:11.5px; color:var(--sub); font-weight:600;">Efisiensi</div>
+                    <div style="font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--card-blue-ink); margin-top:3px;" id="reportCycleEff">96%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section class="screen" id="screen-profile">
+          <div class="screen-scroll">
+            <div class="header" style="padding-bottom:62px;">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('home')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="header-title">Profil</div>
+                <button class="bell-btn" onclick="go('notif')"><span class="dot"></span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2c0 .6-.2 1.2-.6 1.7L4 16.5c-.6.8 0 2 1 2h14c1 0 1.6-1.2 1-2l-1.4-2.6c-.4-.5-.6-1.1-.6-1.7V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="profile-head">
+                <div class="avatar">AS</div>
+                <div class="profile-name">Alam Syukur</div>
+                <div class="profile-id">ID Tambak: TB-12345001</div>
+              </div>
+
+              <div class="card" style="margin-top:24px; padding:6px 16px;">
+                <div class="menu-row" onclick="go('profile-edit')">
+                  <div class="menu-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="#fff" stroke-width="1.8"/><path d="M5 20c1.4-3.8 4.6-6 7-6s5.6 2.2 7 6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                  <span>Edit profil</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="menu-row" onclick="go('security')">
+                  <div class="menu-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+                  <span>Keamanan</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="menu-row" onclick="go('settings')">
+                  <div class="menu-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.8"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.8a7 7 0 0 0-2-1.2L14.2 3H9.8l-.4 2.5a7 7 0 0 0-2 1.2l-2.3-.8-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.8a7 7 0 0 0 2 1.2l.4 2.5h4.4l.4-2.5a7 7 0 0 0 2-1.2l2.3.8 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                  <span>Pengaturan</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="menu-row danger" onclick="openModal('logout')">
+                  <div class="menu-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M14 16l4-4-4-4M18 12H8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <span>Keluar</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROFILE EDIT -->
+        <section class="screen" id="screen-profile-edit">
+          <div class="screen-scroll">
+            <div class="header" style="padding-bottom:62px;">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('profile')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Edit Profil</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="profile-head">
+                <div class="avatar">AS<div class="camera"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3" stroke="#fff" stroke-width="1.8"/></svg></div></div>
+              </div>
+              <div class="section-label" style="margin-top:24px;">Informasi akun</div>
+              <div class="field"><label>Nama pengguna</label><input type="text" value="Alam Syukur"></div>
+              <div class="field"><label>Nomor telepon</label><input type="text" value="+62 812-3456-7890"></div>
+              <div class="field"><label>Alamat e-mail</label><input type="text" value="alam.syukur@ferroshrimp.id"></div>
+              <div class="card" style="padding:6px 16px; margin-top:20px;">
+                <div class="toggle-row"><span>Notifikasi push</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><span>Mode gelap</span><div class="switch" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+              <div style="margin-top:22px;">
+                <button class="btn btn-primary" onclick="toast('Profil berhasil diperbarui')">Simpan perubahan</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section class="screen" id="screen-security">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('profile')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Keamanan</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="card" style="padding:6px 16px;">
+                <div class="menu-row" onclick="go('pin')">
+                  <div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#fff" stroke-width="1.8"/></svg></div>
+                  <span>Ubah PIN</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="menu-row" onclick="go('terms')">
+                  <div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l4 4v14H6V3Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 11h6M9 14h6M9 17h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+                  <span>Syarat &amp; ketentuan</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PIN -->
+        <section class="screen" id="screen-pin">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('security')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Ubah PIN</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="field field-pin"><label>PIN saat ini</label><input type="password" maxlength="4" placeholder="••••"></div>
+              <div class="field field-pin"><label>PIN baru</label><input type="password" maxlength="4" placeholder="••••"></div>
+              <div class="field field-pin"><label>Konfirmasi PIN baru</label><input type="password" maxlength="4" placeholder="••••"></div>
+              <button class="btn btn-secondary" style="margin-top:8px;" onclick="toast('PIN berhasil diubah')">Ubah PIN</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TERMS -->
+        <section class="screen" id="screen-terms">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('security')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Syarat &amp; Ketentuan</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="terms-h">Penggunaan layanan pemantauan FerroShrimp</div>
+              <p class="terms-p">Layanan ini membantu Anda memantau kualitas air tambak melalui sensor turbiditas, suhu, pH, dan oksigen terlarut (DO) yang terhubung ke sistem pemurnian ferrofluida secara real-time.</p>
+              <ol class="terms-ol">
+                <li>Data sensor disinkronkan setiap 5 menit selama alat terhubung ke internet.</li>
+                <li>Pengguna bertanggung jawab menjaga kalibrasi alat agar pembacaan tetap akurat.</li>
+                <li>Peringatan otomatis dikirim saat parameter berada di luar ambang aman.</li>
+                <li>FerroShrimp tidak bertanggung jawab atas kerugian akibat kegagalan jaringan di lokasi tambak.</li>
+              </ol>
+              <p class="terms-p">Dengan melanjutkan, Anda menyetujui penggunaan data tambak untuk keperluan analitik internal guna meningkatkan akurasi prediksi kualitas air.</p>
+              <p class="terms-p">Baca kebijakan lengkap kami di <a class="link-blue" href="#">ferroshrimp.id/ketentuan</a></p>
+              <label class="checkline"><input type="checkbox" checked> Saya telah membaca dan menyetujui seluruh syarat &amp; ketentuan</label>
+              <button class="btn btn-primary" onclick="toast('Ketentuan disetujui'); go('security')">Setuju</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="screen" id="screen-settings">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('profile')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Pengaturan</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="card" style="padding:6px 16px;">
+                <div class="menu-row" onclick="go('notif-settings')">
+                  <div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2c0 .6-.2 1.2-.6 1.7L4 16.5c-.6.8 0 2 1 2h14c1 0 1.6-1.2 1-2l-1.4-2.6c-.4-.5-.6-1.1-.6-1.7V9a6 6 0 0 0-6-6Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+                  <span>Notifikasi</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="menu-row" onclick="go('password')">
+                  <div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="14" r="3.4" stroke="#fff" stroke-width="1.6"/><path d="M10.5 11.5L19 3M16 6l2 2M19 3l2 2-2 2" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+                  <span>Kata sandi</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="menu-row danger" onclick="go('delete')">
+                  <div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <span>Hapus akun</span>
+                  <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- NOTIF SETTINGS -->
+        <section class="screen" id="screen-notif-settings">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('settings')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Notifikasi</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="card" style="padding:6px 16px;">
+                <div class="toggle-row"><span>Notifikasi umum</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><span>Suara</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><span>Getar</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><span>Sinkronisasi sensor</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><span>Peringatan kualitas air</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><span>Laporan mingguan</span><div class="switch" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><span>Baterai alat rendah</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PASSWORD -->
+        <section class="screen" id="screen-password">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('settings')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Kata Sandi</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div class="field field-pin"><label>Kata sandi saat ini</label><input type="password" placeholder="••••••••"></div>
+              <div class="field field-pin"><label>Kata sandi baru</label><input type="password" placeholder="••••••••"></div>
+              <div class="field field-pin"><label>Konfirmasi kata sandi baru</label><input type="password" placeholder="••••••••"></div>
+              <button class="btn btn-secondary" style="margin-top:8px;" onclick="go('password-success')">Ubah kata sandi</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- PASSWORD SUCCESS -->
+        <section class="screen" id="screen-password-success" style="background:linear-gradient(160deg,#FFB066,#FF9A44 55%,#FF8A2E);">
+          <div class="center-stage">
+            <div class="success-ring">
+              <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19 7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:#fff; line-height:1.4;">Kata sandi berhasil<br>diubah</div>
+            <div style="margin-top:30px; width:100%;">
+              <button class="btn" style="background:#fff; color:var(--ink);" onclick="go('settings')">Kembali ke pengaturan</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- DELETE -->
+        <section class="screen" id="screen-delete">
+          <div class="screen-scroll">
+            <div class="header">
+              <div class="header-titlebar">
+                <button class="back-btn" onclick="go('settings')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="header-title">Hapus Akun</div>
+                <div style="width:38px;"></div>
+              </div>
+              <svg class="header-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40V18C60 2 140 0 200 10C260 20 340 2 400 16V40Z" fill="#ffffff"/></svg>
+            </div>
+            <div class="content" style="padding-top:0;">
+              <div style="font-family:var(--font-display); font-weight:700; font-size:17px; text-align:center; margin-bottom:16px; line-height:1.4;">Yakin ingin menghapus akun ini?</div>
+              <div class="warn-box">
+                <ul>
+                  <li>Seluruh riwayat data sensor dan laporan tambak akan dihapus permanen.</li>
+                  <li>Anda tidak dapat lagi mengakses akun maupun perangkat yang terhubung.</li>
+                  <li>Tindakan ini tidak dapat dibatalkan.</li>
+                </ul>
+              </div>
+              <div class="field" style="margin-top:20px;"><label>Masukkan kata sandi untuk konfirmasi</label><input type="password" placeholder="••••••••"></div>
+              <button class="btn btn-danger" onclick="openModal('delete')">Ya, hapus akun</button>
+              <div style="height:10px;"></div>
+              <button class="btn btn-outline" onclick="go('settings')">Batal</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- bottom nav -->
+      <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" data-target="home" onclick="go('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="nav-item" data-target="notif" onclick="go('notif')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2c0 .6-.2 1.2-.6 1.7L4 16.5c-.6.8 0 2 1 2h14c1 0 1.6-1.2 1-2l-1.4-2.6c-.4-.5-.6-1.1-.6-1.7V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <button class="nav-item" data-target="monitor" onclick="go('monitor')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 12l2-3 2 4 2-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="nav-item" data-target="report" onclick="go('report')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 11h5M10 14h5M10 17h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="nav-item" data-target="profile" onclick="go('profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="2"/><path d="M4.5 20c1.6-4.2 5-6.4 7.5-6.4s5.9 2.2 7.5 6.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </nav>
+
+      <!-- modal -->
+      <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box" id="modalBox"></div>
+      </div>
+
+      <!-- toast -->
+      <div class="toast" id="toast"></div>
+
+    </div>
+  </div>
+
+  <div class="credit">Prototipe interaktif tampilan aplikasi FerroShrimp — sentuh tombol navigasi di bawah untuk berpindah layar, seperti pada aplikasi sebenarnya.</div>
+</div>
+
+<script>
+/* ---------------- navigation ---------------- */
+const mainScreens = ['home','notif','monitor','report','profile'];
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById('screen-'+name);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.target===name));
+  document.getElementById('bottomNav').style.display = mainScreens.includes(name) ? 'flex' : 'none';
+  const sc = target ? target.querySelector('.screen-scroll') : null;
+  if(sc) sc.scrollTop = 0;
+}
+
+/* ---------------- toast ---------------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#15B8A6"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------------- modal ---------------- */
+const modals = {
+  logout:{
+    title:'Akhiri sesi',
+    text:'Apakah Anda yakin ingin keluar dari akun ini?',
+    actions:[
+      {label:'Ya, keluar', cls:'btn-secondary', action:()=>{ closeModal(); toast('Anda telah keluar'); go('home'); }},
+      {label:'Batal', cls:'btn-outline', action:()=>closeModal()}
+    ]
+  },
+  delete:{
+    title:'Hapus akun',
+    text:'Tindakan ini akan menghapus akun dan seluruh data tambak Anda secara permanen dan tidak dapat dibatalkan.',
+    actions:[
+      {label:'Ya, hapus akun', cls:'btn-danger', action:()=>{ closeModal(); toast('Akun telah dihapus'); go('home'); }},
+      {label:'Batal', cls:'btn-outline', action:()=>closeModal()}
+    ]
+  }
+};
+function openModal(key){
+  const m = modals[key];
+  const box = document.getElementById('modalBox');
+  box.innerHTML = `<div class="modal-title">${m.title}</div><div class="modal-text">${m.text}</div><div class="modal-actions">${m.actions.map((a,i)=>`<button class="btn ${a.cls}" data-i="${i}">${a.label}</button>`).join('')}</div>`;
+  box.querySelectorAll('button').forEach((btn,i)=>btn.addEventListener('click', m.actions[i].action));
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+
+/* ---------------- chart renderer ---------------- */
+function renderChart(elId, data, color, labels){
+  const w=320,h=170,pad=26;
+  const max = Math.max(...data)*1.15;
+  const stepX = (w-pad*1.4)/(data.length-1);
+  const pts = data.map((v,i)=>{
+    const x = pad + i*stepX;
+    const y = h-pad - (v/max)*(h-pad*1.6);
+    return [x,y];
+  });
+  let path = `M${pts[0][0]},${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++) path += ` L${pts[i][0]},${pts[i][1]}`;
+  const area = path + ` L${pts[pts.length-1][0]},${h-pad} L${pts[0][0]},${h-pad} Z`;
+  const grid = [0,1,2,3].map(i=>{
+    const y = pad*0.3 + i*((h-pad*1.6)/3);
+    return `<line x1="${pad}" y1="${y}" x2="${w-8}" y2="${y}" stroke="#EAEFEE" stroke-width="1"/>`;
+  }).join('');
+  const dots = pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.4" fill="${color}"/>`).join('');
+  const labelEls = labels.map((l,i)=>`<text x="${pad+i*stepX}" y="${h-4}" text-anchor="middle" class="chart-axis-label">${l}</text>`).join('');
+  const gradId = 'g'+elId;
+  document.getElementById(elId).innerHTML = `
+  <svg viewBox="0 0 ${w} ${h}">
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${grid}
+    <path d="${area}" fill="url(#${gradId})"/>
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}
+    ${labelEls}
+  </svg>`;
+}
+
+/* ---------------- data ---------------- */
+const dateLabels = ['20 Mei','23 Mei','26 Mei','29 Mei','1 Jun'];
+
+const monitorData = {
+  turbiditas:{title:'Turbiditas (NTU)', color:'#15B8A6', series:[10.2,12.8,9.6,14.1,12.6],
+    history:[
+      {date:'1 Jun 2026',time:'09:10',val:'12.6 NTU'},
+      {date:'29 Mei 2026',time:'09:05',val:'14.1 NTU'},
+      {date:'26 Mei 2026',time:'08:54',val:'9.6 NTU'},
+      {date:'23 Mei 2026',time:'09:12',val:'12.8 NTU'},
+      {date:'20 Mei 2026',time:'09:00',val:'10.2 NTU'}
+    ]},
+  suhu:{title:'Suhu (°C)', color:'#1F9D55', series:[29.4,30.1,30.8,29.9,30.3],
+    history:[
+      {date:'1 Jun 2026',time:'09:10',val:'30.3 °C'},
+      {date:'29 Mei 2026',time:'09:05',val:'29.9 °C'},
+      {date:'26 Mei 2026',time:'08:54',val:'30.8 °C'},
+      {date:'23 Mei 2026',time:'09:12',val:'30.1 °C'},
+      {date:'20 Mei 2026',time:'09:00',val:'29.4 °C'}
+    ]},
+  ph:{title:'pH', color:'#6B4FBB', series:[7.2,7.8,6.9,7.4,7.6],
+    history:[
+      {date:'1 Jun 2026',time:'09:10',val:'7.6 pH'},
+      {date:'29 Mei 2026',time:'09:05',val:'7.4 pH'},
+      {date:'26 Mei 2026',time:'08:54',val:'6.9 pH'},
+      {date:'23 Mei 2026',time:'09:12',val:'7.8 pH'},
+      {date:'20 Mei 2026',time:'09:00',val:'7.2 pH'}
+    ]},
+  do:{title:'DO (mg/L)', color:'#D9711A', series:[6.1,7.2,5.8,6.9,6.8],
+    history:[
+      {date:'1 Jun 2026',time:'09:10',val:'6.8 mg/L'},
+      {date:'29 Mei 2026',time:'09:05',val:'6.9 mg/L'},
+      {date:'26 Mei 2026',time:'08:54',val:'5.8 mg/L'},
+      {date:'23 Mei 2026',time:'09:12',val:'7.2 mg/L'},
+      {date:'20 Mei 2026',time:'09:00',val:'6.1 mg/L'}
+    ]}
+};
+
+function switchMonitor(key){
+  document.querySelectorAll('#monitorTabs .pill').forEach(p=>p.classList.toggle('active', p.dataset.tab===key));
+  const d = monitorData[key];
+  document.getElementById('monitorChartTitle').textContent = d.title;
+  renderChart('chartMonitor', d.series, d.color, dateLabels);
+  document.getElementById('monitorHistory').innerHTML = d.history.map(h=>`
+    <div class="history-row">
+      <div><div class="history-date">${h.date}</div><div class="history-time">${h.time} WIB</div></div>
+      <div class="history-val">${h.val}</div>
+    </div>`).join('');
+}
+
+const notifData = [
+  {cat:'sistem', day:'Hari ini', icon:'ok', title:'Kualitas air dalam kondisi baik', desc:'Semua parameter berada dalam batas normal.', time:'11:00'},
+  {cat:'info', day:'Hari ini', icon:'info', title:'Laporan mingguan tersedia', desc:'Ringkasan kualitas air minggu ini sudah siap dilihat.', time:'09:41'},
+  {cat:'peringat', day:'Hari ini', icon:'warn', title:'Kualitas air menurun (pH rendah)', desc:'Tingkat pH saat ini berada di angka 6.2. Segera lakukan pengecekan.', time:'08:15'},
+  {cat:'info', day:'Hari ini', icon:'info', title:'Sinkronisasi alat berhasil', desc:'Sensor air telah memperbarui data terbaru pukul 07:00 WIB.', time:'07:00'},
+  {cat:'sistem', day:'Kemarin', icon:'ok', title:'Kualitas air dalam kondisi baik', desc:'Semua parameter berada dalam batas normal.', time:'18:20'},
+  {cat:'info', day:'Kemarin', icon:'info', title:'Sinkronisasi alat berhasil', desc:'Sensor air telah memperbarui data terbaru pukul 12:00 WIB.', time:'12:00'},
+  {cat:'peringat', day:'Kemarin', icon:'warn', title:'Suhu sedikit di atas ambang', desc:'Suhu air tercatat 32.1°C, pantau perangkat aerator.', time:'10:05'}
+];
+function iconSvg(type){
+  if(type==='ok') return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  if(type==='info') return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="1" fill="currentColor"/><path d="M12 11v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 4 3 19h18L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.6" r=".9" fill="currentColor"/></svg>';
+}
+function switchNotif(key){
+  document.querySelectorAll('#notifTabs .pill').forEach(p=>p.classList.toggle('active', p.dataset.tab===key));
+  const list = key==='semua' ? notifData : notifData.filter(n=>n.cat===key);
+  const days = [...new Set(list.map(n=>n.day))];
+  let html='';
+  if(list.length===0){
+    html = `<div style="text-align:center; padding:60px 20px; color:var(--sub); font-size:13.5px;">Belum ada notifikasi pada kategori ini.</div>`;
+  }
+  days.forEach(day=>{
+    html += `<div class="day-label">${day}</div>`;
+    list.filter(n=>n.day===day).forEach(n=>{
+      html += `<div class="notif-item">
+        <div class="notif-ic ${n.icon}">${iconSvg(n.icon)}</div>
+        <div class="notif-body"><div class="notif-title">${n.title}</div><div class="notif-desc">${n.desc}</div></div>
+        <div class="notif-time">${n.time}</div>
+      </div>`;
+    });
+  });
+  document.getElementById('notifList').innerHTML = html;
+}
+
+const reportData = {
+  harian:{label:'Ringkasan harian', chartLabel:'Grafik harian (turbiditas)', range:'20 Mei 2026', series:[8.4,11.2,9.8,12.6,10.1], cycles:'18', duration:'42 mnt', eff:'96%'},
+  mingguan:{label:'Ringkasan mingguan', chartLabel:'Grafik mingguan (turbiditas)', range:'20 Mei 2026 – 27 Mei 2026', series:[62,74,58,81,69], cycles:'112', duration:'40 mnt', eff:'94%'},
+  bulanan:{label:'Ringkasan bulanan', chartLabel:'Grafik bulanan (turbiditas)', range:'Bulan Mei 2026', series:[210,260,230,295,240], cycles:'486', duration:'41 mnt', eff:'95%'}
+};
+function switchReport(key){
+  document.querySelectorAll('#reportTabs .pill').forEach(p=>p.classList.toggle('active', p.dataset.tab===key));
+  const d = reportData[key];
+  document.getElementById('reportSummaryTitle').textContent = d.label;
+  document.getElementById('reportChartTitle').textContent = d.chartLabel;
+  document.getElementById('reportRange').value = d.range;
+  document.getElementById('reportCycleSub').textContent = d.range;
+  document.getElementById('reportCycleValue').textContent = d.cycles;
+  document.getElementById('reportCycleDuration').textContent = d.duration;
+  document.getElementById('reportCycleEff').textContent = d.eff;
+  renderChart('chartReport', d.series, '#15B8A6', dateLabels);
+}
+
+/* ---------------- init ---------------- */
+window.addEventListener('load', ()=>{
+  renderChart('chartHome', [10.2,12.8,9.6,14.1,12.6], '#15B8A6', dateLabels);
+  switchMonitor('turbiditas');
+  switchNotif('semua');
+  switchReport('harian');
+  setTimeout(()=>go('home'), 2600);
+});
+</script>
+</body>
+</html>
